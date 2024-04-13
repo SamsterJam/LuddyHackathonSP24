@@ -33,12 +33,22 @@ export class Config {
         return this._entries;
     }
 
+    get totalEntries(): number {
+        return this._entries.length
+    }
+
     addEntry(entry: Entry): void {
         this._entries.push(entry)
     }
 
     removeEntry(entry: Entry): void {
         this._entries = this.entries.filter(e => e != entry)
+    }
+
+    getEntry(n: number): Entry {
+        if (n <= this._entries.length) {
+            return this._entries[n - 1]
+        } else return null
     }
 
     isActive(): boolean {
