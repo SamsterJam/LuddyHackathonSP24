@@ -5,12 +5,20 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "open": "^10.1.0"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/open/xdg-open"
+    ],
+    "scripts": [
+      "node_modules/open/index.js"
+    ]
   }
 }
