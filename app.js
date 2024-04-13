@@ -7,7 +7,8 @@ function createWindow() {
 		height: 600,
 		autoHideMenuBar: true,
 		webPreferences: {
-			devTools: false
+			devTools: false,
+			preload: path.join(__dirname, "views", "preload.js")
 		}
 	})
 
@@ -21,6 +22,10 @@ app.whenReady().then(() => {
 		if (BrowserWindow.getAllWindows().length === 0) {
 			createWindow()
 		}
+	})
+
+	ipcMain.handle("config:setInputFile", (_, fileName) => {
+		console.log(fileName)
 	})
 })
 
