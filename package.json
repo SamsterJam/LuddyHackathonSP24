@@ -1,12 +1,16 @@
 {
-  "name": "luddyhackathonsp24",
+  "name": "my-test-app",
   "version": "1.0.0",
-  "description": "Fellas, lets cook",
+  "description": "A basic Node.js app for pkg",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "open": "^10.1.0"
+  }
 }
