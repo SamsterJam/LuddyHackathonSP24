@@ -81,19 +81,22 @@ document.getElementById('file-input').addEventListener('change', (event) => {
 
     fileReader.onload = function () {
         const typedarray = new Uint8Array(this.result);
-
+    
         pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
             pdfDoc = pdf;
             document.getElementById('page-count').textContent = pdf.numPages;
-
+    
             // Show the PDF viewer, navigation arrows, and page info
             document.getElementById('pdf-viewer').style.display = 'flex';
             document.querySelector('.pdf-navigation').style.display = 'flex';
             document.getElementById('page-info').style.display = 'block';
-
+    
             document.getElementById('prev-page').disabled = false;
             document.getElementById('next-page').disabled = false;
             renderPage(pageNum);
+    
+            // Add event listener for the "ADD" button here
+            document.getElementById('add-word').addEventListener('click', addWordToList);
         }, reason => {
             console.error(reason);
         });
@@ -106,6 +109,59 @@ document.getElementById('pdf-placeholder').addEventListener('click', () => {
     document.getElementById('file-input').click();
 });
 
+function addWordToList() {
+    const wordInput = document.getElementById('word-input');
+    const word = wordInput.value.trim();
+    if (word === '') {
+        alert('Please enter a word.');
+        return;
+    }
+
+    const wordList = document.getElementById('word-list');
+    const wordItem = document.createElement('div');
+    wordItem.className = 'word-item';
+
+    const wordText = document.createElement('span');
+    wordText.className = 'word-text';
+    wordText.textContent = word;
+
+    const wordActions = document.createElement('div');
+    wordActions.className = 'word-actions';
+
+    const editButton = document.createElement('button');
+    editButton.textContent = 'EDIT';
+    editButton.addEventListener('click', () => editWord(wordItem, wordText));
+
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '&#128465;'; // Trashcan icon
+    deleteButton.className = 'delete-button';
+    deleteButton.addEventListener('click', () => deleteWord(wordItem));
+
+    wordActions.appendChild(editButton);
+    wordActions.appendChild(deleteButton);
+
+    wordItem.appendChild(wordText);
+    wordItem.appendChild(wordActions);
+
+    wordList.appendChild(wordItem);
+
+    wordInput.value = ''; // Clear the input field
+}
+
+function editWord(wordItem, wordText) {
+    const newWord = prompt('Edit the word:', wordText.textContent);
+    if (newWord !== null && newWord.trim() !== '') {
+        wordText.textContent = newWord.trim();
+    }
+}
+
+function deleteWord(wordItem) {
+    if (confirm('Are you sure you want to delete this word?')) {
+        wordItem.remove();
+    }
+}
+
 document.getElementById('prev-page').addEventListener('click', showPrevPage);
 document.getElementById('next-page').addEventListener('click', showNextPage);
 document.getElementById('page-count').textContent = pdf.numPages;
+document.getElementById('add-word').addEventListener('click', addWordToList);
