@@ -1,5 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require("electron/main")
-const path = require("node:path")
+import { app, BrowserWindow, ipcMain } from "electron/main"
+
+import * as path from "path"
 
 function createWindow() {
 	const win = new BrowserWindow({
@@ -8,7 +9,7 @@ function createWindow() {
 		autoHideMenuBar: true,
 		webPreferences: {
 			devTools: false,
-			preload: path.join(__dirname, "views", "preload.js")
+			preload: path.dirname("views/preload.js")
 		}
 	})
 
