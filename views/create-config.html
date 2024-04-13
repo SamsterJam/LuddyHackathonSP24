@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugma</title>
+    <link rel="stylesheet" href="create-config.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PDF Slicer Config Generator</h1>
+        </div>
+        <div class="content">
+            <input type="file" id="file-input" accept="application/pdf" />
+            <div id="pdf-placeholder">
+                <span>Select PDF</span>
+            </div>
+            <div class="pdf-navigation">
+                <button id="prev-page" class="page-nav">&lt;</button>
+                <div id="pdf-viewer"></div>
+                <button id="next-page" class="page-nav">&gt;</button>
+            </div>
+            <div id="page-info">
+                Page <span id="page-num"></span> of <span id="page-count"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
