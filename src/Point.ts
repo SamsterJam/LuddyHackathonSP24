@@ -1,25 +1,25 @@
 export class Point {
-    private _x: Number
-    private _y: Number
+    private _x: number
+    private _y: number
 
-    constructor(x: Number, y: Number) {
+    constructor(x: number, y: number) {
         this._x = x
         this._y = y
     }
 
-    get x(): Number {
+    get x(): number {
         return this._x;
     }
 
-    set x(value: Number) {
+    set x(value: number) {
         this._x = value;
     }
 
-    get y(): Number {
+    get y(): number {
         return this._y;
     }
 
-    set y(value: Number) {
+    set y(value: number) {
         this._y = value;
     }
 }
