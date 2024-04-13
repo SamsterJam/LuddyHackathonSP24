@@ -176,6 +176,9 @@ canvas {
 
 #word-list {
     margin-top: 20px;
+    max-height: 200px; /* Adjust this value as needed */
+    overflow-y: auto; /* Enables vertical scrolling */
+    padding-right: 10px; /* Optional: to ensure scrollbar doesn't overlap content */
 }
 
 .word-item {
