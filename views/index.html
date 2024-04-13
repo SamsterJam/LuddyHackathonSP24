@@ -19,67 +19,18 @@
             <div id="pdf-placeholder">
                 <span>Select PDF</span>
             </div>
-            <div id="pdf-viewer"></div>
+            <div class="pdf-navigation">
+                <button id="prev-page" class="page-nav">&lt;</button>
+                <div id="pdf-viewer"></div>
+                <button id="next-page" class="page-nav">&gt;</button>
+            </div>
+            <div id="page-info">
+                Page <span id="page-num"></span> of <span id="page-count"></span>
+            </div>
         </div>
     </div>
 
-    <script>
-        document.getElementById('file-input').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file.type !== 'application/pdf') {
-                console.error(file.name, 'is not a PDF file.');
-                return;
-            }
-
-            const fileReader = new FileReader();
-
-            fileReader.onload = function () {
-                const typedarray = new Uint8Array(this.result);
-
-                // Load the PDF file.
-                pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
-                    // Get the first page.
-                    pdf.getPage(1).then(page => {
-                        const container = document.getElementById('pdf-viewer');
-                        // Make the container visible before calculating the scale
-                        container.style.display = 'flex';
-                        const containerWidth = container.clientWidth;
-
-                        // Calculate the scale based on the container width and the page width
-                        const scale = containerWidth / page.getViewport({ scale: 1 }).width;
-                        const viewport = page.getViewport({ scale: scale });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-
-                        // Render the PDF page into the canvas context.
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        const renderTask = page.render(renderContext);
-                        renderTask.promise.then(() => {
-                            // Append the canvas to the pdf-viewer div.
-                            container.innerHTML = '';
-                            container.appendChild(canvas);
-                            // Hide the placeholder
-                            document.getElementById('pdf-placeholder').style.display = 'none';
-                        });
-                    });
-                }, reason => {
-                    console.error(reason);
-                });
-            };
-
-            fileReader.readAsArrayBuffer(file);
-        });
-
-        // Add an event listener to the placeholder to trigger the file input click
-        document.getElementById('pdf-placeholder').addEventListener('click', () => {
-            document.getElementById('file-input').click();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>

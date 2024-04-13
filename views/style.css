@@ -17,15 +17,15 @@ body {
 }
 
 .container {
-    background-color: #2d2d2d; 
+    background-color: #2d2d2d;
     border-radius: 8px;
     overflow: hidden;
     width: 80%;
-    max-width: 600px; 
+    max-width: 600px;
 }
 
 .header {
-    background-color: #007bff; 
+    background-color: #007bff;
     color: #fff;
     padding: 5px;
     text-align: center;
@@ -45,25 +45,25 @@ body {
 
 #pdf-placeholder {
     width: 100%;
-    border: 2px dashed #444; 
+    border: 2px dashed #444;
     border-radius: 4px;
-    background-color: #252525; 
+    background-color: #252525;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #888; 
-    font-size: 1.5em; 
-    text-transform: uppercase; 
-    cursor: pointer; 
-    margin-bottom: 20px; 
-    padding: 20px; 
-    height: 150px; 
+    color: #888;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 20px;
+    height: 150px;
 }
 
 #pdf-viewer {
     width: 100%;
     height: 500px;
-    background-color: #252525; 
+    background-color: #252525;
     display: none;
     justify-content: center;
     align-items: center;
@@ -74,7 +74,64 @@ body {
 canvas {
     max-width: 100%;
     max-height: 100%;
-    display: block; 
+    display: block;
+}
+
+.pdf-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    display: none;
+}
+
+#pdf-viewer {
+    width: 100%;
+    height: 500px;
+    background-color: #252525;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 4px;
+    margin: 0 20px;
+
+    display: none;
+}
+
+.page-nav {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 500px;
+    padding: 10px 20px;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    transition: background-color 0.3s;
+    height: 50px;
+    /* Set a fixed height for the buttons */
+}
+
+.page-nav:hover {
+    background-color: #0056b3;
+}
+
+.page-nav:disabled {
+    background-color: #555;
+    cursor: default;
+}
+
+#page-info {
+    display: none;
+}
+
+/* Add this to vertically center the canvas within the viewer */
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    margin: auto;
 }
 
 /* Responsive design */
