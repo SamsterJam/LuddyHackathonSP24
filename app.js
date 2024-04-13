@@ -9,7 +9,7 @@ import { Point } from "./dist/Point.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let config = null
+let config = new Config()
 
 function createWindow() {
     const win = new BrowserWindow({
