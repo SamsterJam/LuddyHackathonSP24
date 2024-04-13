@@ -4,6 +4,8 @@ import * as path from "path";
 import { readFile, writeFile } from "fs/promises";
 import { parse, stringify } from "ini"
 import { Config } from "./dist/Config.js"
+import { Entry } from "./dist/Entry.js"
+import { Point } from "./dist/Point.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,19 +46,20 @@ app.whenReady().then(() => {
 
 		readFile(configFile).then(buff => buff.toString()).then(parse).then(configData => {
 			config = new Config(configData.Files.INPUT, configData.Files.OUTPUT)
-			// Here you would add the logic to slice the PDF using the provided config
-			// For example, you might read the config file and use a PDF library to slice the PDF
-			// This is a placeholder for your slicing logic
+			let totalEntries = Object.keys(configData.OCR).length/2
+			for (let i = 1; i <= totalEntries; i++) {
+				const allPoints = configData.OCR[`Loc${i}`]
+				config.addEntry(new Entry(configData.OCR[`Text${i}`], new Point(allPoints[0], allPoints[1]), new Point(allPoints[2], allPoints[3])))
+			}
+			console.log(config)
 			try {
-				// Your slicing logic here
-				// For example: await slicePdf(configFile, pdfFile, outputDir);
 				return 'PDF slicing completed successfully!';
 			} catch (error) {
 				console.error('Error slicing PDF:', error);
 				throw error;
 			}
-		}).catch(e => {
-			// TODO: DO SOME ERROR HANDLING HERE
+		}).catch(_ => {
+			throw "There was a formatting issue with the provided config file, please try again."
 		})
     });
 });
