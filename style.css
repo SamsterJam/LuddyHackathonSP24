@@ -1,36 +1,33 @@
-/* Reset some default styles */
-body, h1, p {
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #1e1e1e; /* Dark mode background */
+    color: #ffffff; /* Light text for dark mode */
     line-height: 1.6;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
     padding: 20px;
-    box-sizing: border-box;
 }
 
 .container {
-    background-color: #fff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    background-color: #2d2d2d; /* Slightly lighter dark background for the container */
     border-radius: 8px;
     overflow: hidden;
     width: 80%;
-    max-width: 700px;
+    max-width: 600px; /* Set a max-width for the container */
 }
 
 .header {
-    background-color: #007bff;
+    background-color: #007bff; /* Accent color for the header */
     color: #fff;
-    padding: 20px 40px;
+    padding: 20px;
     text-align: center;
 }
 
@@ -39,44 +36,58 @@ body {
 }
 
 .content {
-    padding: 40px;
+    padding: 20px;
 }
 
 #file-input {
-    display: block;
+    display: none; /* Hide the default file input */
+}
+
+#pdf-placeholder {
     width: 100%;
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
+    border: 2px dashed #444; /* Slightly darker outline for placeholder */
     border-radius: 4px;
-    box-sizing: border-box;
+    background-color: #252525; /* Dark background for the placeholder */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888; /* Placeholder text color */
+    font-size: 1.5em; /* Larger text size for modern look */
+    text-transform: uppercase; /* Uppercase text for a modern feel */
+    cursor: pointer; /* Change cursor to indicate clickable area */
+    margin-bottom: 20px; /* Spacing after the placeholder */
+    padding: 20px; /* Padding inside the placeholder */
+    height: 150px; /* Set a fixed height for the placeholder */
 }
 
 #pdf-viewer {
     width: 100%;
-    height: 500px;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    background-color: #fafafa;
-    display: flex;
+    height: 500px; /* Set a fixed height for the viewer */
+    background-color: #252525; /* Dark background for the viewer */
+    display: none; /* Initially hidden */
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    border-radius: 4px;
 }
 
 canvas {
     max-width: 100%;
-    height: auto;
-    border-radius: 4px;
+    max-height: 100%; /* Ensure the canvas doesn't exceed the container's height */
+    display: block; /* Display block to remove bottom space */
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .content {
-        padding: 20px;
+    .container {
+        width: 90%;
     }
 
     .header {
         padding: 10px 20px;
+    }
+
+    .content {
+        padding: 20px;
     }
 }

@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF First Page Viewer</title>
-	<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
     <!-- Include the PDF.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
 </head>
+
 <body>
-    <input type="file" id="file-input" accept="application/pdf" />
-    <div id="pdf-viewer"></div>
+    <div class="container">
+        <div class="header">
+            <h1>PDF First Page Viewer</h1>
+        </div>
+        <div class="content">
+            <input type="file" id="file-input" accept="application/pdf" />
+            <div id="pdf-placeholder">
+                <span>Select PDF</span>
+            </div>
+            <div id="pdf-viewer"></div>
+        </div>
+    </div>
 
     <script>
         document.getElementById('file-input').addEventListener('change', (event) => {
@@ -22,15 +34,19 @@
 
             const fileReader = new FileReader();
 
-            fileReader.onload = function() {
+            fileReader.onload = function () {
                 const typedarray = new Uint8Array(this.result);
 
                 // Load the PDF file.
-                pdfjsLib.getDocument({data: typedarray}).promise.then(pdf => {
+                pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
                     // Get the first page.
                     pdf.getPage(1).then(page => {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({scale: scale});
+                        const container = document.getElementById('pdf-viewer');
+                        const containerWidth = container.clientWidth;
+
+                        // Calculate the scale based on the container width and the page width
+                        const scale = containerWidth / page.getViewport({ scale: 1 }).width;
+                        const viewport = page.getViewport({ scale: scale });
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
                         canvas.height = viewport.height;
@@ -44,8 +60,12 @@
                         const renderTask = page.render(renderContext);
                         renderTask.promise.then(() => {
                             // Append the canvas to the pdf-viewer div.
-                            document.getElementById('pdf-viewer').innerHTML = '';
-                            document.getElementById('pdf-viewer').appendChild(canvas);
+                            const pdfViewer = document.getElementById('pdf-viewer');
+                            pdfViewer.innerHTML = '';
+                            pdfViewer.appendChild(canvas);
+                            // Hide the placeholder and show the PDF viewer
+                            document.getElementById('pdf-placeholder').style.display = 'none';
+                            pdfViewer.style.display = 'flex'; // Change to 'flex' to center the canvas
                         });
                     });
                 }, reason => {
@@ -55,6 +75,12 @@
 
             fileReader.readAsArrayBuffer(file);
         });
+
+        // Add an event listener to the placeholder to trigger the file input click
+        document.getElementById('pdf-placeholder').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
     </script>
 </body>
+
 </html>
