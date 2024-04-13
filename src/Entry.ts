@@ -1,4 +1,6 @@
-class Entry {
+import { Point } from "./Point.js"
+
+export class Entry {
     private _text: string
     private _pointOne: Point
     private _pointTwo: Point

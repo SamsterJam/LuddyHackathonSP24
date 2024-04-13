@@ -1,4 +1,4 @@
-class Point {
+export class Point {
     private _x: Number
     private _y: Number
 

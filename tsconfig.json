@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
+        "module": "NodeNext",
         "target": "ES2020",
         "declaration": true,
-        "outDir": "dist/"
+        "outDir": "dist/",
+        "moduleResolution": "nodenext"
     },
     "include": ["src/*.ts"]
 }

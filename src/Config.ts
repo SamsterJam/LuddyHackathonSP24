@@ -1,3 +1,5 @@
+import { Entry } from "./Entry.js"
+
 export class Config {
     private _input: string;
     private _output: string;
