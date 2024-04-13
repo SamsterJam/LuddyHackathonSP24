@@ -1,5 +1,3 @@
-const { ipcRenderer } = require('electron');
-
 document.getElementById('sliceBtn').addEventListener('click', () => {
     const configFileInput = document.getElementById('configFile');
     const pdfFileInput = document.getElementById('pdfFile');
@@ -14,7 +12,7 @@ document.getElementById('sliceBtn').addEventListener('click', () => {
     const pdfFile = pdfFileInput.files[0].path;
     const outputDir = outputDirInput.files[0].path;
 
-    ipcRenderer.invoke('slice-pdf', { configFile, pdfFile, outputDir }).then((response) => {
+    window.electronAPI.slicePdf({ configFile, pdfFile, outputDir }).then((response) => {
         console.log(response);
         alert('PDF slicing completed!');
     }).catch((error) => {
