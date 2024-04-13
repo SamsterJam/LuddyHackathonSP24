@@ -11,12 +11,12 @@ let config = null
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 800,
         autoHideMenuBar: true,
         webPreferences: {
             devTools: false,
-            preload: path.join(__dirname, "views", "preload.js") // Corrected path
+            preload: path.join(__dirname, "views", "preload.js")
         }
     });
 
