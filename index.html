@@ -3,47 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LuddyHackathon Frontend</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f7f7f7;
-        }
-        .container {
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-    </style>
+    <title>PDF First Page Viewer</title>
+	<link rel="stylesheet" href="style.css">
+    <!-- Include the PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to LuddyHackathon!</h1>
-        <p>Click the button below to send a request to the server:</p>
-        <button id="fetchButton">Say Hello</button>
-        <p id="serverResponse"></p>
-    </div>
-	<script>
-    document.getElementById('fetchButton').addEventListener('click', function() {
-        fetch('/hello')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('serverResponse').textContent = data;
-            })
-            .catch(error => {
-                console.error('Error fetching data: ', error);
-                document.getElementById('serverResponse').textContent = 'Error contacting the server.';
-            });
-    });
-</script>
+    <input type="file" id="file-input" accept="application/pdf" />
+    <div id="pdf-viewer"></div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file.type !== 'application/pdf') {
+                console.error(file.name, 'is not a PDF file.');
+                return;
+            }
+
+            const fileReader = new FileReader();
+
+            fileReader.onload = function() {
+                const typedarray = new Uint8Array(this.result);
+
+                // Load the PDF file.
+                pdfjsLib.getDocument({data: typedarray}).promise.then(pdf => {
+                    // Get the first page.
+                    pdf.getPage(1).then(page => {
+                        const scale = 1.5;
+                        const viewport = page.getViewport({scale: scale});
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        // Render the PDF page into the canvas context.
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        const renderTask = page.render(renderContext);
+                        renderTask.promise.then(() => {
+                            // Append the canvas to the pdf-viewer div.
+                            document.getElementById('pdf-viewer').innerHTML = '';
+                            document.getElementById('pdf-viewer').appendChild(canvas);
+                        });
+                    });
+                }, reason => {
+                    console.error(reason);
+                });
+            };
+
+            fileReader.readAsArrayBuffer(file);
+        });
+    </script>
 </body>
 </html>
