@@ -2,8 +2,7 @@
   "name": "my-test-app",
   "version": "1.0.0",
   "description": "A basic Node.js app for pkg",
-  "main": "index.js",
-  "bin": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "electron app.js"
   },
