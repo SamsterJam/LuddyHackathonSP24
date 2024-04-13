@@ -24,7 +24,7 @@ body, html {
 }
 
 .action-btn {
-    background-color: #007bff;
+    background-color: #4caf50;
     color: white;
     border: none;
     margin: 10px;
@@ -42,7 +42,7 @@ body, html {
 }
 
 .action-btn:hover {
-    background-color: #0056b3;
+    background-color: #317c34;
 }
 
 .action-btn:active {

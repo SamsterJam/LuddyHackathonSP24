@@ -1,0 +1,84 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    margin: 0;
+    padding: 0; /* Remove padding to allow true centering */
+    display: flex; /* Use Flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100vh; /* Full viewport height */
+}
+
+.container {
+    max-width: 600px;
+    width: 100%; /* Add this to ensure padding doesn't exceed the max-width */
+    padding: 20px;
+    background-color: #2d2d2d;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Remove margin to allow true centering */
+}
+
+h1 {
+    text-align: center;
+    color: #4caf50;
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="file"] {
+    width: 100%; 
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #3c3c3c;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ddd;
+    cursor: pointer;
+    box-sizing: border-box; 
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    padding: 5px 10px;
+    background-color: #555;
+    border: none;
+    border-radius: 4px;
+    color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #666;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #66bb6a;
+}
+
+button:active {
+    background-color: #388e3c;
+}
+
+/* Add some padding to the bottom of the container */
+.container {
+    padding-bottom: 40px;
+}

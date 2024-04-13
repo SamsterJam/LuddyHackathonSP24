@@ -25,7 +25,7 @@ body {
 }
 
 .header {
-    background-color: #007bff;
+    background-color: #4caf50;
     color: #fff;
     padding: 5px;
     text-align: center;
@@ -89,7 +89,7 @@ canvas {
 }
 
 .page-nav {
-    background-color: #007bff;
+    background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 500px;
@@ -102,7 +102,7 @@ canvas {
 }
 
 .page-nav:hover {
-    background-color: #0056b3;
+    background-color: #267029;
 }
 
 .page-nav:disabled {
