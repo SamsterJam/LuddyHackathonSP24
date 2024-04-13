@@ -11,8 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^29.3.0",
-    "open": "^10.1.0"
+    "electron": "^29.3.0"
   },
   "pkg": {
     "assets": [
