@@ -6,14 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF First Page Viewer</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Include the PDF.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <h1>PDF First Page Viewer</h1>
+            <h1>Ligma balls</h1>
         </div>
         <div class="content">
             <input type="file" id="file-input" accept="application/pdf" />
@@ -42,6 +41,8 @@
                     // Get the first page.
                     pdf.getPage(1).then(page => {
                         const container = document.getElementById('pdf-viewer');
+                        // Make the container visible before calculating the scale
+                        container.style.display = 'flex';
                         const containerWidth = container.clientWidth;
 
                         // Calculate the scale based on the container width and the page width
@@ -60,12 +61,10 @@
                         const renderTask = page.render(renderContext);
                         renderTask.promise.then(() => {
                             // Append the canvas to the pdf-viewer div.
-                            const pdfViewer = document.getElementById('pdf-viewer');
-                            pdfViewer.innerHTML = '';
-                            pdfViewer.appendChild(canvas);
-                            // Hide the placeholder and show the PDF viewer
+                            container.innerHTML = '';
+                            container.appendChild(canvas);
+                            // Hide the placeholder
                             document.getElementById('pdf-placeholder').style.display = 'none';
-                            pdfViewer.style.display = 'flex'; // Change to 'flex' to center the canvas
                         });
                     });
                 }, reason => {
