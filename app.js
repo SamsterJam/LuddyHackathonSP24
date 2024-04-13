@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron/main";
 import { fileURLToPath } from 'url';
 import * as path from "path";
 import { readFile, writeFile } from "fs/promises";
+import { parse, stringify } from "ini"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
