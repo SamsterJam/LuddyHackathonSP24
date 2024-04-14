@@ -68,7 +68,6 @@ app.whenReady().then(() => {
 				const allPoints = configData.OCR[`Loc${i}`].split(",")
 				config.addEntry(new Entry(configData.OCR[`Text${i}`], new Point(allPoints[0], allPoints[1]), new Point(allPoints[2], allPoints[3])))
 			}
-			console.log(config)
 			try {
 				return 'PDF slicing completed successfully!';
 			} catch (error) {
