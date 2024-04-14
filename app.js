@@ -73,6 +73,10 @@ app.whenReady().then(() => {
 			throw "There was a formatting issue with the provided config file, please try again."
 		})
     });
+
+	ipcMain.handle("debug", (_, data) => {
+		console.log(data)
+	})
 });
 
 app.on("window-all-closed", () => {
