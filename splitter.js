@@ -73,3 +73,9 @@ async function savePDF(path, pdf){
         }
     })
 }
+
+const pages = {
+    1: "COMPLAINTS",
+    4: "SUMMONS",
+    5: "APPEARANCE"}
+splitPDF(pages, "/home/wiian/Downloads/123456.pdf")
