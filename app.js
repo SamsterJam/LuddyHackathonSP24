@@ -55,13 +55,8 @@ app.whenReady().then(() => {
 		console.log(fileName)
 	})
 	
-	ipcMain.handle("slice-pdf", async (_, data) => {
-        const { configFile, pdfFile, outputDir } = data;
-        console.log(`Config File: ${configFile}`);
-        console.log(`PDF File: ${pdfFile}`);
-        console.log(`Output Directory: ${outputDir}`);
-
-		readFile(configFile).then(buff => buff.toString()).then(parse).then(configData => {
+	ipcMain.handle("config:loadConfig", async (_, configFile) => {
+        readFile(configFile).then(buff => buff.toString()).then(parse).then(configData => {
 			config = new Config(configData.Files.INPUT, configData.Files.OUTPUT)
 			let totalEntries = Object.keys(configData.OCR).length/2
 			for (let i = 1; i <= totalEntries; i++) {

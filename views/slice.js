@@ -8,7 +8,7 @@ document.getElementById('sliceBtn').addEventListener('click', () => {
 
     const configFile = configFileInput.files[0].path;
 
-    window.electronAPI.slicePdf({ configFile }).then((response) => {
+    window.electronAPI.loadConfig(configFile).then((response) => {
         console.log(response);
         alert('PDF slicing completed!');
     }).catch((error) => {
