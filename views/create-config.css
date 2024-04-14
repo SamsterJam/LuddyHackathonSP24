@@ -191,6 +191,12 @@ canvas {
     border-radius: 4px;
 }
 
+.word-item:hover{
+    cursor: pointer;
+    background-color: #2b2b2b;
+}
+
+
 .word-text {
     flex: 1;
 }

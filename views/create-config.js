@@ -2,6 +2,10 @@ let pdfDoc = null;
 let pageNum = 1;
 let pageIsRendering = false;
 let pageNumIsPending = null;
+let activeWord = null;
+
+const words = {};
+let currentScale = 1; // Add this global variable
 
 function renderPage(num) {
     pageIsRendering = true;
@@ -13,8 +17,8 @@ function renderPage(num) {
         const containerWidth = container.clientWidth;
 
         // Calculate the scale based on the container width and the page width
-        const scale = containerWidth / page.getViewport({ scale: 1 }).width;
-        const viewport = page.getViewport({ scale: scale });
+        currentScale = containerWidth / page.getViewport({ scale: 1 }).width; // Update the scale here
+        const viewport = page.getViewport({ scale: currentScale });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
@@ -32,6 +36,11 @@ function renderPage(num) {
             container.appendChild(canvas);
             pageIsRendering = false;
 
+            // Draw the bounding box for the active word
+            if (activeWord) {
+                drawBoundingBox(context);
+            }
+
             if (pageNumIsPending !== null) {
                 renderPage(pageNumIsPending);
                 pageNumIsPending = null;
@@ -41,6 +50,25 @@ function renderPage(num) {
 
     // Update page counters
     document.getElementById('page-num').textContent = num;
+}
+
+function drawBoundingBox(context) {
+    if (!activeWord || !words[activeWord]) {
+        return;
+    }
+    const boundingBox = words[activeWord];
+
+    // Adjust the bounding box coordinates based on the current scale
+    const scaledX = boundingBox[0] * currentScale;
+    const scaledY = boundingBox[1] * currentScale;
+    const scaledWidth = (boundingBox[2] - boundingBox[0]) * currentScale;
+    const scaledHeight = (boundingBox[3] - boundingBox[1]) * currentScale;
+
+    context.beginPath();
+    context.rect(scaledX, scaledY, scaledWidth, scaledHeight);
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.stroke();
 }
 
 function queueRenderPage(num) {
@@ -145,7 +173,41 @@ function addWordToList() {
 
     wordList.appendChild(wordItem);
 
+    // Add a static bounding box for debug
+    words[word] = [0, 0, 50, 50];
+
+    wordItem.addEventListener('click', () => {
+        setActiveWord(word, wordItem);
+    });
+
     wordInput.value = ''; // Clear the input field
+}
+
+function setActiveWord(word, wordItem) {
+    // Deselect any previously active word items
+    const wordList = document.getElementById('word-list');
+    Array.from(wordList.getElementsByClassName('word-item')).forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Set the active word item
+    wordItem.classList.add('active');
+    activeWord = word;
+
+    // Redraw the current page to show the bounding box
+    renderPage(pageNum);
+}
+
+function deleteWord(wordItem) {
+    if (confirm('Are you sure you want to delete this word?')) {
+        const wordText = wordItem.querySelector('.word-text').textContent;
+        delete words[wordText]; // Remove the bounding box data
+        if (activeWord === wordText) {
+            activeWord = null; // Clear the active word
+        }
+        wordItem.remove();
+        renderPage(pageNum); // Redraw the page without the bounding box
+    }
 }
 
 function editWord(wordItem, wordText) {
@@ -155,11 +217,6 @@ function editWord(wordItem, wordText) {
     }
 }
 
-function deleteWord(wordItem) {
-    if (confirm('Are you sure you want to delete this word?')) {
-        wordItem.remove();
-    }
-}
 
 document.getElementById('prev-page').addEventListener('click', showPrevPage);
 document.getElementById('next-page').addEventListener('click', showNextPage);
