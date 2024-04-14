@@ -166,7 +166,7 @@ function savePDF(pth, pdf) {
 		dialog.showErrorBox("Error", "Error writing PDF to file")
 		return
 	})
-	dialog.showErrorBox("Success", "PDF file saved successfully")
+	dialog.showErrorBox("Success", `PDF file saved successfully at ${pth}`)
 }
 
 function createDirectory(givenPath) {
