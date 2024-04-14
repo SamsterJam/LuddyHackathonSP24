@@ -4,8 +4,12 @@ import Tesseract from "tesseract.js";
 
 // Perform OCR on a specific region of each page of a PDF
 // Returns an object with the page number as the key and the file type as the value
-async function performOcrOnPdfRegion(pdfPath, x, y, width, height) {
+async function performOcrOnPdfRegion(pdfPath, x1, y1, x2, y2) {
     const filetypes = {};
+    const x = x1;
+    const y = y1;
+    const width = x2 - x1;
+    const height = y2 - y1;
 
     try {
         const images = await pdf(pdfPath);
@@ -37,10 +41,10 @@ async function performOcrOnPdfRegion(pdfPath, x, y, width, height) {
 
 // TODO: Remove declarations and function call
 const pdfPath = "123456.pdf";
-const x = 200;  // Top left x-coordinate of the region
-const y = 210;  // Top left y-coordinate of the region
-const width = 210;  // Width of the region
-const height = 40;  // Height of the region
+const x1 = 200;  // Top left x-coordinate of the region
+const y1 = 210;  // Top left y-coordinate of the region
+const x2 = 410;  // Bottom right x-coordinate of the region
+const y2 = 250;  // Bottom right y-coordinate of the region
 
-performOcrOnPdfRegion(pdfPath, x, y, width, height)
+performOcrOnPdfRegion(pdfPath, x1, y1, x2, y2)
     .catch(console.error);
