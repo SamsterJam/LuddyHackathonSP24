@@ -5,17 +5,50 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "electron app.js"
+    "compile": "tsc",
+    "start": "electron app.js",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "rebuild": "electron-rebuild"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^29.3.0",
+    "canvas": "^2.11.2",
     "ini": "^4.1.2",
     "pdf-lib": "^1.17.1",
     "pdf2image": "^1.2.3",
-    "sharp": "^0.33.3",
     "tesseract.js": "^5.0.5"
+  },
+  "devDependencies": {
+    "electron": "^29.3.0",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9"
+  },
+  "build": {
+    "appId": "com.yourcompany.yourapp",
+    "productName": "MyTestApp",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "views/**/*",
+      "app.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

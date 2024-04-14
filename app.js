@@ -7,9 +7,9 @@ import { Config } from './dist/Config.js';
 import { Entry } from './dist/Entry.js';
 import { Point } from './dist/Point.js';
 import { convertPDF } from 'pdf2image';
-import sharp from 'sharp';
 import Tesseract from 'tesseract.js';
 import { PDFDocument, StandardFonts } from "pdf-lib"
+import { createCanvas, loadImage } from 'canvas';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,7 +21,7 @@ function createWindow() {
         height: 1000,
         autoHideMenuBar: true,
         webPreferences: {
-            devTools: false,
+            // devTools: false,
             preload: path.join(__dirname, 'views', 'preload.js'),
         },
     });
@@ -57,20 +57,33 @@ async function ocrScan() {
 
     try {
         const images = await convertPDF(config.input, options);
-		const allImages = await Promise.all(images.map(i => i.path).map(i => readFile(i)))
-		let i = 0
-        for (let image of allImages) {
-            console.log('Processing image: ', image);
+        const allImages = await Promise.all(images.map(i => i.path).map(i => readFile(i)))
+        let i = 0
+        for (let imageBuffer of allImages) {
+            console.log('Processing image: ', imageBuffer);
+            const image = await loadImage(imageBuffer);
             for (const boundary of config.entries) {
                 const { pointOne, pointTwo, text } = boundary;
-                const croppedImage = await sharp(image)
-                    .extract({
-                        left: Math.floor(pointOne.x),
-                        top: Math.floor(pointOne.y),
-                        width: Math.floor(pointTwo.x) - Math.floor(pointOne.x),
-                        height: Math.floor(pointTwo.y) - Math.floor(pointOne.y),
-                    })
-                    .toBuffer();
+                const width = Math.floor(pointTwo.x) - Math.floor(pointOne.x);
+                const height = Math.floor(pointTwo.y) - Math.floor(pointOne.y);
+                const canvas = createCanvas(width, height);
+                const ctx = canvas.getContext('2d');
+
+                // Draw the cropped image onto the canvas
+                ctx.drawImage(
+                    image,
+                    Math.floor(pointOne.x),
+                    Math.floor(pointOne.y),
+                    width,
+                    height,
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                // Convert the canvas to a Buffer
+                const croppedImage = canvas.toBuffer();
 
                 const ocrData = await Tesseract.recognize(croppedImage, 'eng');
                 const isMatch = ocrData.data.text
@@ -83,15 +96,16 @@ async function ocrScan() {
                     break; // Stop processing other boundaries if a match is found
                 }
             }
-			i++
+            i++;
         }
-		rm("eng.traineddata").catch(e => {})
-		images.forEach(i => {
-			rm(i.path).catch(e => {})
-		})
-		splitPDF(result)
+        rm("eng.traineddata").catch(e => {})
+        images.forEach(i => {
+            rm(i.path).catch(e => {})
+        })
+        splitPDF(result)
     } catch (e) {
-		dialog.showErrorBox("Error", "There was a problem with reading the document, please try again.")
+        console.log(e);
+        dialog.showErrorBox("Error", "There was a problem with reading the document, please try again.")
     }
 }
 
@@ -115,7 +129,7 @@ async function splitPDF(pages) {
                 if (textWidth > width) {
                     fontSize = (width / 2) * 30 / textWidth;
                 }
-                page.drawText(text, {
+                page.drawText(text.toUpperCase(), {
                     x: width / 2 - textWidth / 2,
                     y: height / 2,
                     size: fontSize,
@@ -135,7 +149,7 @@ async function splitPDF(pages) {
         const saveOperations = [];
         for (const key of Object.keys(splicedDocs)) {
             let _path = config.output.endsWith("out") ? createDirectory(config.input) : path.join(config.output, path.basename(config.input));
-            _path = _path.replace('.pdf', `_${key}.pdf`);
+            _path = _path.replace('.pdf', `_${key.toUpperCase()}.pdf`);
             saveOperations.push(savePDF(_path, splicedDocs[key]));
         }
 
