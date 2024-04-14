@@ -229,14 +229,17 @@ canvas {
     margin-top: 5px;
 }
 
-.word-sliders div {
+.slider-container {
+    display: flex;
+    align-items: center;
     margin-bottom: 5px;
 }
 
-.word-sliders label {
+.slider-label {
     margin-right: 5px;
+    white-space: nowrap; /* Prevent the label from wrapping */
 }
 
-.word-sliders input[type="range"] {
-    width: 100%;
+.slider-input {
+    flex-grow: 1; /* Allow the slider to take up the remaining space */
 }

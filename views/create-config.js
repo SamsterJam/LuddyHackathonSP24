@@ -20,7 +20,7 @@ function renderPage(num) {
         const containerWidth = container.clientWidth;
 
         // Calculate the scale based on the container width and the page width
-         // Update the scale here
+        // Update the scale here
         const viewport = page.getViewport({ scale: currentScale });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -73,8 +73,10 @@ function drawBoundingBox(context) {
 
     // Adjust the bounding box coordinates based on the current scale
     const scaledX = boundingBox[0] * currentScale;
-    const scaledY = boundingBox[1] * currentScale;
+    // Invert the Y coordinates because canvas origin is at the top-left
+    const scaledY = (pageHeight - boundingBox[3]) * currentScale;
     const scaledWidth = (boundingBox[2] - boundingBox[0]) * currentScale;
+    // Calculate height based on inverted Y coordinates
     const scaledHeight = (boundingBox[3] - boundingBox[1]) * currentScale;
 
     context.beginPath();
@@ -95,7 +97,12 @@ function updateBoundingBox(event) {
     }
 
     const index = { 'x1': 0, 'y1': 1, 'x2': 2, 'y2': 3 }[id];
-    words[word][index] = value * currentScale;
+    // Invert the Y values because canvas origin is at the top-left
+    if (id.startsWith('y')) {
+        words[word][index] = pageHeight - (value * currentScale);
+    } else {
+        words[word][index] = value * currentScale;
+    }
 
     if (activeWord === word) {
         renderPage(pageNum); // Redraw the page with the updated bounding box
@@ -140,20 +147,20 @@ document.getElementById('file-input').addEventListener('change', (event) => {
 
     fileReader.onload = function () {
         const typedarray = new Uint8Array(this.result);
-    
+
         pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
             pdfDoc = pdf;
             document.getElementById('page-count').textContent = pdf.numPages;
-    
+
             // Show the PDF viewer, navigation arrows, and page info
             document.getElementById('pdf-viewer').style.display = 'flex';
             document.querySelector('.pdf-navigation').style.display = 'flex';
             document.getElementById('page-info').style.display = 'block';
-    
+
             document.getElementById('prev-page').disabled = false;
             document.getElementById('next-page').disabled = false;
             renderPage(pageNum);
-    
+
             // Add event listener for the "ADD" button here
             document.getElementById('add-word').addEventListener('click', addWordToList);
         }, reason => {
@@ -187,29 +194,29 @@ function addWordToList() {
     const wordActions = document.createElement('div');
     wordActions.className = 'word-actions';
 
-    const editButton = document.createElement('button');
-    editButton.textContent = 'EDIT';
-    editButton.addEventListener('click', () => editWord(wordItem, wordText));
-
     const deleteButton = document.createElement('button');
     deleteButton.innerHTML = '&#128465;'; // Trashcan icon
     deleteButton.className = 'delete-button';
     deleteButton.addEventListener('click', () => deleteWord(wordItem));
 
-    wordActions.appendChild(editButton);
     wordActions.appendChild(deleteButton);
 
     wordItem.appendChild(wordText);
-    wordItem.appendChild(wordActions);
 
     const sliders = document.createElement('div');
     sliders.className = 'word-sliders';
 
     const createSlider = (id, min, max, value) => {
         const sliderContainer = document.createElement('div');
+        sliderContainer.className = 'slider-container';
+    
         const sliderLabel = document.createElement('label');
+        sliderLabel.className = 'slider-label';
         sliderLabel.textContent = id.toUpperCase() + ': ';
+        sliderLabel.setAttribute('for', id + '-slider'); // Associate the label with the slider
+    
         const slider = document.createElement('input');
+        slider.className = 'slider-input'; // Add class for styling
         slider.type = 'range';
         slider.id = id + '-slider';
         slider.min = min;
@@ -217,23 +224,38 @@ function addWordToList() {
         slider.value = value;
         slider.dataset.word = word;
         slider.addEventListener('input', updateBoundingBox);
+    
         sliderContainer.appendChild(sliderLabel);
         sliderContainer.appendChild(slider);
         return sliderContainer;
     };
 
+
+    // Initialize the bounding box with the new dimensions and position
+    const centerX = pageWidth * 0.5;
+    const centerY = pageHeight * 0.5;
+    const boxWidth = pageWidth * 0.5; // Half the width of the page
+    const boxHeight = pageHeight * 0.1; // A tenth of the height of the page
+    words[word] = [
+        centerX - boxWidth / 2, // x1
+        centerY - boxHeight / 2, // y1
+        centerX + boxWidth / 2, // x2
+        centerY + boxHeight / 2, // y2
+    ];
+
     // Use the unscaled PDF page dimensions for the sliders, adjusted by the current scale
-    sliders.appendChild(createSlider('x1', 0, pageWidth / currentScale, 0));
-    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, 0));
-    sliders.appendChild(createSlider('x2', 0, pageWidth / currentScale, (pageWidth / currentScale) * 0.1)); // 10% of page width
-    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (pageHeight / currentScale) * 0.1)); // 10% of page height
+    sliders.appendChild(createSlider('x1', 0, pageWidth / currentScale, (words[word][0] / currentScale)));
+    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, (pageHeight - words[word][1]) / currentScale));
+    sliders.appendChild(createSlider('x2', 0, pageWidth / currentScale, (words[word][2] / currentScale)));
+    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (pageHeight - words[word][3]) / currentScale));
 
     wordItem.appendChild(sliders);
 
+    wordItem.appendChild(wordActions);
+
     wordList.appendChild(wordItem);
 
-    // Initialize the bounding box with some default values
-    words[word] = [0, 0, pageWidth * 0.1, pageHeight * 0.1];
+    setActiveWord(word, wordItem);
 
     wordItem.addEventListener('click', () => {
         setActiveWord(word, wordItem);
