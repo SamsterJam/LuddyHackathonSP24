@@ -19,6 +19,7 @@ export class Config {
 
     set input(value: string) {
         this._input = value;
+        this._active = this._input != null && this._output != null
     }
 
     get output(): string {
@@ -27,6 +28,7 @@ export class Config {
 
     set output(value: string) {
         this._output = value;
+        this._active = this._input != null && this._output != null
     }
 
     get entries(): Entry[] {
