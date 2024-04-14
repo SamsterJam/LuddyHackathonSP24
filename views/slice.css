@@ -1,7 +1,7 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1e1e1e;
-    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
     margin: 0;
     padding: 0;
     display: flex;
@@ -14,9 +14,9 @@ body {
     max-width: 400px;
     width: 100%;
     padding: 20px;
-    background-color: #2d2d2d;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
@@ -36,24 +36,27 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 15px;
-    background-color: #3c3c3c;
-    border: 1px solid #555;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
+    background-color: #f7f7f7;
+    border: 2px dashed #d0d0d0;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .upload-label:hover {
-    background-color: #4caf50;
+    background-color: #e8e8e8;
+    border-color: #4caf50;
 }
 
 .upload-icon {
     font-size: 24px;
     margin-right: 10px;
+    color: #4caf50;
 }
 
 .upload-text {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
+    color: #333;
 }
 
 .slice-btn {
@@ -61,17 +64,19 @@ h1 {
     padding: 15px;
     background-color: #4caf50;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     color: #fff;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .slice-btn:hover {
     background-color: #66bb6a;
+    transform: translateY(-3px);
 }
 
 .slice-btn:active {
     background-color: #388e3c;
+    transform: translateY(-1px);
 }

@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sugma</title>
+    <title>PDF Slicer Config Generator</title>
     <link rel="stylesheet" href="create-config.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
 </head>
 
@@ -15,23 +16,24 @@
             <h1>PDF Slicer Config Generator</h1>
         </div>
         <div class="content">
-            <input type="file" id="file-input" accept="application/pdf" />
-            <div id="pdf-placeholder">
+            <label for="file-input" class="file-input-label">Select PDF File</label>
+            <input type="file" id="file-input" accept="application/pdf" class="file-input" />
+            <div id="pdf-placeholder" class="pdf-placeholder">
                 <span>Select PDF</span>
             </div>
             <div class="pdf-navigation">
                 <button id="prev-page" class="page-nav">&lt;</button>
-                <div id="pdf-viewer"></div>
+                <div id="pdf-viewer" class="pdf-viewer"></div>
                 <button id="next-page" class="page-nav">&gt;</button>
             </div>
-            <div id="page-info">
+            <div id="page-info" class="page-info">
                 Page <span id="page-num"></span> of <span id="page-count"></span>
             </div>
-            <div id="word-entry">
-                <input type="text" id="word-input" placeholder="Enter a word" />
-                <button id="add-word">ADD</button>
+            <div id="word-entry" class="word-entry">
+                <input type="text" id="word-input" class="word-input" placeholder="Enter a word" />
+                <button id="add-word" class="add-word">ADD</button>
             </div>
-            <div id="word-list"></div>
+            <div id="word-list" class="word-list"></div>
         </div>
         
         <button id="generate-config" class="generate-config-btn">Generate Config</button>
