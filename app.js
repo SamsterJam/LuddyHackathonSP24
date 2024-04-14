@@ -138,12 +138,17 @@ async function splitPDF(pages) {
             }
         }
 
+        let term = null;
+
         for (let i = 0; i < pdfDoc.getPages().length; i++) {
             if (pages.hasOwnProperty(i + 1)) {
-                const term = pages[i + 1];
-                const [copiedPage] = await splicedDocs[term].copyPages(pdfDoc, [i]);
-                splicedDocs[term].addPage(copiedPage);
+                term = pages[i + 1];
             }
+            if(term == null){
+                continue
+            }
+            const [copiedPage] = await splicedDocs[term].copyPages(pdfDoc, [i]);
+            splicedDocs[term].addPage(copiedPage);
         }
 
         const saveOperations = [];
