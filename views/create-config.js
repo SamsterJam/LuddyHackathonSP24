@@ -95,7 +95,7 @@ function updateBoundingBox(event) {
     }
 
     const index = { 'x1': 0, 'y1': 1, 'x2': 2, 'y2': 3 }[id];
-    words[word][index] = value;
+    words[word][index] = value * currentScale;
 
     if (activeWord === word) {
         renderPage(pageNum); // Redraw the page with the updated bounding box
