@@ -95,78 +95,66 @@ async function ocrScan() {
     }
 }
 
-function splitPDF(pages) {
-	readFile(config.input)
-	.then(existingPdfBytes => PDFDocument.load(existingPdfBytes))
-	.then(async pdfDoc => {
-		const terms = Object.values(pages)
-
-        let currentSpliceDoc = null
-        let splicedDocs = {}
-
+async function splitPDF(pages) {
+    try {
+        const existingPdfBytes = await readFile(config.input);
+        const pdfDoc = await PDFDocument.load(existingPdfBytes);
+        const terms = Object.values(pages);
+        let splicedDocs = {};
 
         for (const term of terms) {
-            if(!splicedDocs.hasOwnProperty(term)){
-                splicedDocs[term] = await PDFDocument.create()
-                const page = splicedDocs[term].addPage([612, 792])
-                const {width, height} = page.getSize()
-                let fontSize = 30
-                const text = term
-                const font = await pdfDoc.embedFont(StandardFonts.TimesRoman)
+            if (!splicedDocs.hasOwnProperty(term)) {
+                splicedDocs[term] = await PDFDocument.create();
+                const page = splicedDocs[term].addPage([612, 792]);
+                const { width, height } = page.getSize();
+                let fontSize = 30;
+                const text = term;
+                const font = await splicedDocs[term].embedFont(StandardFonts.TimesRoman);
 
-                const textWidth = font.widthOfTextAtSize(text, fontSize)
-                if(textWidth > width){
-                    fontSize = (width / 2) * 30 / textWidth
+                const textWidth = font.widthOfTextAtSize(text, fontSize);
+                if (textWidth > width) {
+                    fontSize = (width / 2) * 30 / textWidth;
                 }
-                page.drawText(term, {
+                page.drawText(text, {
                     x: width / 2 - textWidth / 2,
                     y: height / 2,
                     size: fontSize,
-                    font: font
-                })
+                    font: font,
+                });
             }
         }
 
-
-        for(let i = 0; i < pdfDoc.getPages().length; i++){
-            if(pages.hasOwnProperty(i + 1)){ //Changing document to splice to
-                currentSpliceDoc = pages[i + 1]
+        for (let i = 0; i < pdfDoc.getPages().length; i++) {
+            if (pages.hasOwnProperty(i + 1)) {
+                const term = pages[i + 1];
+                const [copiedPage] = await splicedDocs[term].copyPages(pdfDoc, [i]);
+                splicedDocs[term].addPage(copiedPage);
             }
-            if(currentSpliceDoc == null){
-                continue
-            }
-
-            const doc = splicedDocs[currentSpliceDoc]
-
-            const [copiedPage] = await doc.copyPages(pdfDoc, [i])
-            doc.addPage(copiedPage)
-
-            console.log(`${currentSpliceDoc} ${i + 1}`)
         }
 
+        const saveOperations = [];
         for (const key of Object.keys(splicedDocs)) {
-			let _path = config.output.endsWith("out") ? createDirectory(config.input) : path.join(config.output, path.basename(config.input))
-            console.log(_path)
-            _path = _path.replace('.pdf', `_${key}.pdf`)
-            console.log(_path)
-            savePDF(_path, splicedDocs[key])
+            let _path = config.output.endsWith("out") ? createDirectory(config.input) : path.join(config.output, path.basename(config.input));
+            _path = _path.replace('.pdf', `_${key}.pdf`);
+            saveOperations.push(savePDF(_path, splicedDocs[key]));
         }
-	})
-	.catch(e => {
-		console.log(e)
-		dialog.showErrorBox("Error", "There was a problem with splitting the PDF, please try again.")
-	})
+
+        await Promise.all(saveOperations);
+
+        await dialog.showMessageBox({
+            type: 'info',
+            title: 'Success',
+            message: 'All PDF sections saved successfully.'
+        });
+    } catch (e) {
+        console.log(e);
+        dialog.showErrorBox("Error", "There was a problem with splitting the PDF, please try again.");
+    }
 }
 
-function savePDF(pth, pdf) {
-	pdf.save()
-	.then(bytes => writeFile(pth, bytes))
-	.catch(e => {
-		console.log(e)
-		dialog.showErrorBox("Error", "Error writing PDF to file")
-		return
-	})
-	dialog.showErrorBox("Success", `PDF file saved successfully at ${pth}`)
+async function savePDF(pth, pdf) {
+    const bytes = await pdf.save();
+    await writeFile(pth, bytes);
 }
 
 function createDirectory(givenPath) {
