@@ -4,6 +4,9 @@ let pageIsRendering = false;
 let pageNumIsPending = null;
 let activeWord = null;
 
+let pageWidth = 0;
+let pageHeight = 0;
+
 const words = {};
 let currentScale = 1; // Add this global variable
 
@@ -17,12 +20,16 @@ function renderPage(num) {
         const containerWidth = container.clientWidth;
 
         // Calculate the scale based on the container width and the page width
-        currentScale = containerWidth / page.getViewport({ scale: 1 }).width; // Update the scale here
+         // Update the scale here
         const viewport = page.getViewport({ scale: currentScale });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+
+        // Store the page dimensions
+        pageWidth = viewport.width;
+        pageHeight = viewport.height;
 
         // Render the PDF page into the canvas context
         const renderContext = {
@@ -30,6 +37,12 @@ function renderPage(num) {
             viewport: viewport
         };
         const renderTask = page.render(renderContext);
+
+        currentScale = containerWidth / page.getViewport({ scale: 1 }).width;
+
+        // Store the unscaled page dimensions
+        pageWidth = page.getViewport({ scale: 1 }).width;
+        pageHeight = page.getViewport({ scale: 1 }).height;
 
         renderTask.promise.then(() => {
             container.innerHTML = '';
@@ -69,6 +82,24 @@ function drawBoundingBox(context) {
     context.strokeStyle = 'red';
     context.lineWidth = 2;
     context.stroke();
+}
+
+function updateBoundingBox(event) {
+    const slider = event.target;
+    const word = slider.dataset.word;
+    const id = slider.id.split('-')[0]; // 'x1', 'y1', 'x2', or 'y2'
+    const value = parseInt(slider.value, 10);
+
+    if (!words[word]) {
+        words[word] = [0, 0, 50, 50]; // Default bounding box if not set
+    }
+
+    const index = { 'x1': 0, 'y1': 1, 'x2': 2, 'y2': 3 }[id];
+    words[word][index] = value;
+
+    if (activeWord === word) {
+        renderPage(pageNum); // Redraw the page with the updated bounding box
+    }
 }
 
 function queueRenderPage(num) {
@@ -171,10 +202,38 @@ function addWordToList() {
     wordItem.appendChild(wordText);
     wordItem.appendChild(wordActions);
 
+    const sliders = document.createElement('div');
+    sliders.className = 'word-sliders';
+
+    const createSlider = (id, min, max, value) => {
+        const sliderContainer = document.createElement('div');
+        const sliderLabel = document.createElement('label');
+        sliderLabel.textContent = id.toUpperCase() + ': ';
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.id = id + '-slider';
+        slider.min = min;
+        slider.max = max;
+        slider.value = value;
+        slider.dataset.word = word;
+        slider.addEventListener('input', updateBoundingBox);
+        sliderContainer.appendChild(sliderLabel);
+        sliderContainer.appendChild(slider);
+        return sliderContainer;
+    };
+
+    // Use the unscaled PDF page dimensions for the sliders, adjusted by the current scale
+    sliders.appendChild(createSlider('x1', 0, pageWidth / currentScale, 0));
+    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, 0));
+    sliders.appendChild(createSlider('x2', 0, pageWidth / currentScale, (pageWidth / currentScale) * 0.1)); // 10% of page width
+    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (pageHeight / currentScale) * 0.1)); // 10% of page height
+
+    wordItem.appendChild(sliders);
+
     wordList.appendChild(wordItem);
 
-    // Add a static bounding box for debug
-    words[word] = [0, 0, 50, 50];
+    // Initialize the bounding box with some default values
+    words[word] = [0, 0, pageWidth * 0.1, pageHeight * 0.1];
 
     wordItem.addEventListener('click', () => {
         setActiveWord(word, wordItem);
@@ -217,8 +276,16 @@ function editWord(wordItem, wordText) {
     }
 }
 
+// Add this function to handle window resize events
+function onWindowResize() {
+    // Only re-render the page if a PDF document has been loaded
+    if (pdfDoc) {
+        renderPage(pageNum);
+    }
+}
 
 document.getElementById('prev-page').addEventListener('click', showPrevPage);
 document.getElementById('next-page').addEventListener('click', showNextPage);
 document.getElementById('page-count').textContent = pdf.numPages;
 document.getElementById('add-word').addEventListener('click', addWordToList);
+window.addEventListener('resize', onWindowResize);
