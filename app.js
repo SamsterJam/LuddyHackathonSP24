@@ -1,19 +1,18 @@
-import { app, BrowserWindow, ipcMain } from "electron/main";
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { fileURLToPath } from 'url';
-import * as path from "path";
-import { readFile, writeFile } from "fs/promises";
-import { parse, stringify } from "ini"
-import { Config } from "./dist/Config.js"
-import { Entry } from "./dist/Entry.js"
-import { Point } from "./dist/Point.js"
-import { pdf } from "pdf-to-img"
-import sharp from "sharp"
-import Tesseract from "tesseract.js"
-import { dialog } from 'electron';
+import * as path from 'path';
+import { readFile, writeFile } from 'fs/promises';
+import { parse, stringify } from 'ini';
+import { Config } from './dist/Config.js';
+import { Entry } from './dist/Entry.js';
+import { Point } from './dist/Point.js';
+import { convertPDF } from 'pdf2image';
+import sharp from 'sharp';
+import Tesseract from 'tesseract.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let config = new Config()
+let config = new Config();
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -22,11 +21,11 @@ function createWindow() {
         autoHideMenuBar: true,
         webPreferences: {
             devTools: false,
-            preload: path.join(__dirname, "views", "preload.js")
-        }
+            preload: path.join(__dirname, 'views', 'preload.js'),
+        },
     });
 
-    win.loadFile("views/index.html");
+    win.loadFile('views/index.html');
 }
 
 function forgeConfig() {
@@ -46,38 +45,56 @@ function forgeConfig() {
 	return stringify(obj)
 }
 
-function ocrScan() {
-	const result = {}
-	pdf(config.input)
-	.then(async images => {
-		let i = 0
-		for await (const image of images) {
-			console.log("FOOD: ", image)
-			for (const boundry of config.entries) {
-				let shouldBreak = false
-				// sharp(image).extract({ left: boundry.pointOne.x, top: boundry.pointOne.y, width: boundry.pointTwo.x - boundry.pointOne.x, height: boundry.pointTwo.y - boundry.pointOne.y }).toBuffer()
-				// .then(croppedImage => Tesseract.recognize(croppedImage, "eng"))
-				// .then(ocrData => ocrData.data.text.toUpperCase().split(/\s+/).filter(word => word == boundry.text).join(' ').length > 0)
-				// .then(isMatch => {
-				// 	if (isMatch) {
-				// 		result[i+1] = boundry.text
-				// 		shouldBreak = true
-				// 	}
-				// })
-				// .catch(e => {
-				// 	throw e
-				// })
-				// if (shouldBreak) break
-			}
-			i++
-		}
-		console.log(result)
-	})
-	.catch(e => {
-		console.log(e)
-		// error handling
-	})
+async function ocrScan() {
+    const result = {};
+    const options = {
+        density: 100,
+        quality: 100,
+        outputType: 'png',
+        pages: '*',
+    };
+
+    try {
+        const images = await convertPDF(config.input, options);
+        for (const [index, image] of images.entries()) {
+            console.log('Processing image: ', image);
+            for (const boundary of config.entries) {
+                const { pointOne, pointTwo, text } = boundary;
+                const croppedImage = await sharp(image)
+                    .extract({
+                        left: Math.floor(pointOne.x),
+                        top: Math.floor(pointOne.y),
+                        width: Math.floor(pointTwo.x - pointOne.x),
+                        height: Math.floor(pointTwo.y - pointOne.y),
+                    })
+                    .toBuffer();
+
+                const ocrData = await Tesseract.recognize(croppedImage, 'eng');
+                const isMatch = ocrData.data.text
+                    .toUpperCase()
+                    .split(/\s+/)
+                    .includes(text.toUpperCase());
+
+                if (isMatch) {
+                    result[index + 1] = text;
+                    break; // Stop processing other boundaries if a match is found
+                }
+            }
+        }
+        console.log(result);
+    } catch (e) {
+        console.error(e);
+        // error handling
+    }
 }
+
+
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
 
 app.whenReady().then(() => {
 	createWindow()
