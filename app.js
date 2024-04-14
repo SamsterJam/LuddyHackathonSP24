@@ -25,7 +25,7 @@ function createWindow() {
     win.loadFile("views/index.html");
 }
 
-function writeConfig() {
+function forgeConfig() {
 	let obj = {
 		Files: {
 			INPUT: config.input,
