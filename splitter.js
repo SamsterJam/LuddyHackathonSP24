@@ -1,5 +1,6 @@
 import {PDFDocument, StandardFonts} from 'pdf-lib'
 import * as fs from "node:fs";
+import * as path from "node:path";
 
 function splitPDF(pages, pdfPath){
     fs.readFile(pdfPath, async (error, existingPdfBytes) => {
@@ -50,16 +51,36 @@ function splitPDF(pages, pdfPath){
                 console.log(`${currentSpliceDoc} ${i + 1}`)
             }
 
-
-
             for (const key of Object.keys(splicedDocs)) {
-                let path = pdfPath.replace('.pdf', `_${key}.pdf`)
+                let path = createOutDirectoryAndReturnNewPath(pdfPath)
+                console.log(path)
+                path = path.replace('.pdf', `_${key}.pdf`)
+                console.log(path)
                 await savePDF(path, splicedDocs[key])
             }
         } catch (loadError) {
             console.error("Error loading or processing PDF document:", loadError)
         }
     })
+}
+
+function createOutDirectoryAndReturnNewPath(filePath) {
+    const directoryPath = path.dirname(filePath);
+    const fileName = path.basename(filePath);
+    const outDirectory = path.join(directoryPath, 'out');
+
+    // Create the /out/ directory if it doesn't exist
+    fs.mkdir(outDirectory, { recursive: true }, (err) => {
+        if (err) {
+            console.error('Error creating /out/ directory:', err);
+            return;
+        }
+
+        // Generate the new file path in the /out/ directory
+        // const newFilePath = path.join(outDirectory, fileName);
+    });
+
+    return path.join(outDirectory, fileName);
 }
 
 async function savePDF(path, pdf){
