@@ -48,15 +48,17 @@ function forgeConfig() {
 async function ocrScan() {
     const result = {};
     const options = {
-        density: 100,
-        quality: 100,
+        density: 72,
+        quality: 72,
         outputType: 'png',
         pages: '*',
     };
 
     try {
         const images = await convertPDF(config.input, options);
-        for (const [index, image] of images.entries()) {
+		const allImages = await Promise.all(images.map(i => i.path).map(i => readFile(i)))
+		let i = 0
+        for (let image of allImages) {
             console.log('Processing image: ', image);
             for (const boundary of config.entries) {
                 const { pointOne, pointTwo, text } = boundary;
@@ -64,8 +66,8 @@ async function ocrScan() {
                     .extract({
                         left: Math.floor(pointOne.x),
                         top: Math.floor(pointOne.y),
-                        width: Math.floor(pointTwo.x - pointOne.x),
-                        height: Math.floor(pointTwo.y - pointOne.y),
+                        width: Math.floor(pointTwo.x) - Math.floor(pointOne.x),
+                        height: Math.floor(pointTwo.y) - Math.floor(pointOne.y),
                     })
                     .toBuffer();
 
@@ -76,10 +78,11 @@ async function ocrScan() {
                     .includes(text.toUpperCase());
 
                 if (isMatch) {
-                    result[index + 1] = text;
+                    result[i + 1] = text;
                     break; // Stop processing other boundaries if a match is found
                 }
             }
+			i++
         }
         console.log(result);
     } catch (e) {
