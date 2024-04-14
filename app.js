@@ -65,7 +65,7 @@ app.whenReady().then(() => {
 			config = new Config(configData.Files.INPUT, configData.Files.OUTPUT)
 			let totalEntries = Object.keys(configData.OCR).length/2
 			for (let i = 1; i <= totalEntries; i++) {
-				const allPoints = configData.OCR[`Loc${i}`]
+				const allPoints = configData.OCR[`Loc${i}`].split(",")
 				config.addEntry(new Entry(configData.OCR[`Text${i}`], new Point(allPoints[0], allPoints[1]), new Point(allPoints[2], allPoints[3])))
 			}
 			console.log(config)
