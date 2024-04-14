@@ -191,6 +191,12 @@ canvas {
     border-radius: 4px;
 }
 
+.word-item:hover{
+    cursor: pointer;
+    background-color: #2b2b2b;
+}
+
+
 .word-text {
     flex: 1;
 }
@@ -215,4 +221,22 @@ canvas {
 
 .word-actions .delete-button:hover {
     background-color: #d32f2f;
+}
+
+.word-sliders {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+}
+
+.word-sliders div {
+    margin-bottom: 5px;
+}
+
+.word-sliders label {
+    margin-right: 5px;
+}
+
+.word-sliders input[type="range"] {
+    width: 100%;
 }

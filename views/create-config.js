@@ -2,6 +2,13 @@ let pdfDoc = null;
 let pageNum = 1;
 let pageIsRendering = false;
 let pageNumIsPending = null;
+let activeWord = null;
+
+let pageWidth = 0;
+let pageHeight = 0;
+
+const words = {};
+let currentScale = 1; // Add this global variable
 
 function renderPage(num) {
     pageIsRendering = true;
@@ -13,62 +20,86 @@ function renderPage(num) {
         const containerWidth = container.clientWidth;
 
         // Calculate the scale based on the container width and the page width
-        const viewport = page.getViewport({ scale: 1 });
-        const scale = containerWidth / viewport.width;
-        const scaledViewport = page.getViewport({ scale: scale });
-
+         // Update the scale here
+        const viewport = page.getViewport({ scale: currentScale });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        canvas.height = scaledViewport.height;
-        canvas.width = scaledViewport.width;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Store the page dimensions
+        pageWidth = viewport.width;
+        pageHeight = viewport.height;
 
         // Render the PDF page into the canvas context
         const renderContext = {
             canvasContext: context,
-            viewport: scaledViewport
+            viewport: viewport
         };
         const renderTask = page.render(renderContext);
 
-        // Inside the renderTask.promise.then() callback in the renderPage function
+        currentScale = containerWidth / page.getViewport({ scale: 1 }).width;
+
+        // Store the unscaled page dimensions
+        pageWidth = page.getViewport({ scale: 1 }).width;
+        pageHeight = page.getViewport({ scale: 1 }).height;
+
         renderTask.promise.then(() => {
-            // Clear the container before adding new content
             container.innerHTML = '';
-            // Append the canvas to the PDF viewer container
             container.appendChild(canvas);
-
-            // Create and append the red box with a transparent interior and red border
-            const redBox = document.createElement('div');
-            redBox.id = 'red-box';
-            redBox.style.position = 'absolute';
-            redBox.style.top = '10px'; // Initial position
-            redBox.style.left = '10px'; // Initial position
-            redBox.style.width = '100px'; // Width of the red box
-            redBox.style.height = '50px'; // Height of the red box
-            redBox.style.backgroundColor = 'transparent'; // Transparent interior
-            redBox.style.border = '2px solid red'; // Red border
-            redBox.style.cursor = 'move';
-            redBox.style.boxSizing = 'border-box';
-            container.appendChild(redBox);
-
-            // Make the red box draggable and pass the scale
-            makeDraggable(redBox, scale);
-
-            // Update the flag indicating that the page is no longer rendering
             pageIsRendering = false;
 
-            // Check if there is a pending page to render
+            // Draw the bounding box for the active word
+            if (activeWord) {
+                drawBoundingBox(context);
+            }
+
             if (pageNumIsPending !== null) {
                 renderPage(pageNumIsPending);
                 pageNumIsPending = null;
             }
-        }).catch(err => {
-            // Handle errors that occur during the rendering process
-            console.error(err);
         });
     });
 
     // Update page counters
     document.getElementById('page-num').textContent = num;
+}
+
+function drawBoundingBox(context) {
+    if (!activeWord || !words[activeWord]) {
+        return;
+    }
+    const boundingBox = words[activeWord];
+
+    // Adjust the bounding box coordinates based on the current scale
+    const scaledX = boundingBox[0] * currentScale;
+    const scaledY = boundingBox[1] * currentScale;
+    const scaledWidth = (boundingBox[2] - boundingBox[0]) * currentScale;
+    const scaledHeight = (boundingBox[3] - boundingBox[1]) * currentScale;
+
+    context.beginPath();
+    context.rect(scaledX, scaledY, scaledWidth, scaledHeight);
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.stroke();
+}
+
+function updateBoundingBox(event) {
+    const slider = event.target;
+    const word = slider.dataset.word;
+    const id = slider.id.split('-')[0]; // 'x1', 'y1', 'x2', or 'y2'
+    const value = parseInt(slider.value, 10);
+
+    if (!words[word]) {
+        words[word] = [0, 0, 50, 50]; // Default bounding box if not set
+    }
+
+    const index = { 'x1': 0, 'y1': 1, 'x2': 2, 'y2': 3 }[id];
+    words[word][index] = value * currentScale;
+
+    if (activeWord === word) {
+        renderPage(pageNum); // Redraw the page with the updated bounding box
+    }
 }
 
 function queueRenderPage(num) {
@@ -109,20 +140,20 @@ document.getElementById('file-input').addEventListener('change', (event) => {
 
     fileReader.onload = function () {
         const typedarray = new Uint8Array(this.result);
-
+    
         pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
             pdfDoc = pdf;
             document.getElementById('page-count').textContent = pdf.numPages;
-
+    
             // Show the PDF viewer, navigation arrows, and page info
             document.getElementById('pdf-viewer').style.display = 'flex';
             document.querySelector('.pdf-navigation').style.display = 'flex';
             document.getElementById('page-info').style.display = 'block';
-
+    
             document.getElementById('prev-page').disabled = false;
             document.getElementById('next-page').disabled = false;
             renderPage(pageNum);
-
+    
             // Add event listener for the "ADD" button here
             document.getElementById('add-word').addEventListener('click', addWordToList);
         }, reason => {
@@ -171,9 +202,71 @@ function addWordToList() {
     wordItem.appendChild(wordText);
     wordItem.appendChild(wordActions);
 
+    const sliders = document.createElement('div');
+    sliders.className = 'word-sliders';
+
+    const createSlider = (id, min, max, value) => {
+        const sliderContainer = document.createElement('div');
+        const sliderLabel = document.createElement('label');
+        sliderLabel.textContent = id.toUpperCase() + ': ';
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.id = id + '-slider';
+        slider.min = min;
+        slider.max = max;
+        slider.value = value;
+        slider.dataset.word = word;
+        slider.addEventListener('input', updateBoundingBox);
+        sliderContainer.appendChild(sliderLabel);
+        sliderContainer.appendChild(slider);
+        return sliderContainer;
+    };
+
+    // Use the unscaled PDF page dimensions for the sliders, adjusted by the current scale
+    sliders.appendChild(createSlider('x1', 0, pageWidth / currentScale, 0));
+    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, 0));
+    sliders.appendChild(createSlider('x2', 0, pageWidth / currentScale, (pageWidth / currentScale) * 0.1)); // 10% of page width
+    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (pageHeight / currentScale) * 0.1)); // 10% of page height
+
+    wordItem.appendChild(sliders);
+
     wordList.appendChild(wordItem);
 
+    // Initialize the bounding box with some default values
+    words[word] = [0, 0, pageWidth * 0.1, pageHeight * 0.1];
+
+    wordItem.addEventListener('click', () => {
+        setActiveWord(word, wordItem);
+    });
+
     wordInput.value = ''; // Clear the input field
+}
+
+function setActiveWord(word, wordItem) {
+    // Deselect any previously active word items
+    const wordList = document.getElementById('word-list');
+    Array.from(wordList.getElementsByClassName('word-item')).forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Set the active word item
+    wordItem.classList.add('active');
+    activeWord = word;
+
+    // Redraw the current page to show the bounding box
+    renderPage(pageNum);
+}
+
+function deleteWord(wordItem) {
+    if (confirm('Are you sure you want to delete this word?')) {
+        const wordText = wordItem.querySelector('.word-text').textContent;
+        delete words[wordText]; // Remove the bounding box data
+        if (activeWord === wordText) {
+            activeWord = null; // Clear the active word
+        }
+        wordItem.remove();
+        renderPage(pageNum); // Redraw the page without the bounding box
+    }
 }
 
 function editWord(wordItem, wordText) {
@@ -183,9 +276,11 @@ function editWord(wordItem, wordText) {
     }
 }
 
-function deleteWord(wordItem) {
-    if (confirm('Are you sure you want to delete this word?')) {
-        wordItem.remove();
+// Add this function to handle window resize events
+function onWindowResize() {
+    // Only re-render the page if a PDF document has been loaded
+    if (pdfDoc) {
+        renderPage(pageNum);
     }
 }
 
@@ -193,66 +288,4 @@ document.getElementById('prev-page').addEventListener('click', showPrevPage);
 document.getElementById('next-page').addEventListener('click', showNextPage);
 document.getElementById('page-count').textContent = pdf.numPages;
 document.getElementById('add-word').addEventListener('click', addWordToList);
-
-function makeDraggable(element, scale) {
-    let isDragging = false;
-    let offsetX, offsetY;
-
-    // Function to update the coordinates display
-    function updateCoordinates() {
-        const pdfViewer = document.getElementById('pdf-viewer');
-        const pdfViewerRect = pdfViewer.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-
-        // Check if scale is a valid number
-        if (isNaN(scale) || scale <= 0) {
-            console.error('Invalid scale value:', scale);
-            return;
-        }
-
-        // Calculate the position of the red box relative to the PDF viewer container
-        const relativeTopLeftX = elementRect.left - pdfViewerRect.left;
-        const relativeTopLeftY = elementRect.top - pdfViewerRect.top;
-        const relativeBottomRightX = relativeTopLeftX + elementRect.width;
-        const relativeBottomRightY = relativeTopLeftY + elementRect.height;
-
-        // Normalize the coordinates based on the scale of the PDF
-        const normalizedTopLeftX = (relativeTopLeftX / scale).toFixed(2);
-        const normalizedTopLeftY = (relativeTopLeftY / scale).toFixed(2);
-        const normalizedBottomRightX = (relativeBottomRightX / scale).toFixed(2);
-        const normalizedBottomRightY = (relativeBottomRightY / scale).toFixed(2);
-
-        // Update the text elements with the normalized coordinates
-        document.getElementById('top-left-coords').textContent = `Top-Left: (${normalizedTopLeftX}, ${normalizedTopLeftY})`;
-        document.getElementById('bottom-right-coords').textContent = `Bottom-Right: (${normalizedBottomRightX}, ${normalizedBottomRightY})`;
-    }
-
-    element.addEventListener('mousedown', function (e) {
-        isDragging = true;
-        offsetX = e.clientX - element.getBoundingClientRect().left;
-        offsetY = e.clientY - element.getBoundingClientRect().top;
-        element.style.border = '2px dashed #f00'; // Optional: solid border on drag start
-        updateCoordinates(); // Update coordinates when dragging starts
-    });
-
-    document.addEventListener('mousemove', function (e) {
-        if (isDragging) {
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            element.style.left = (mouseX - offsetX) + 'px';
-            element.style.top = (mouseY - offsetY) + 'px';
-            updateCoordinates(); // Update coordinates while dragging
-        }
-    });
-
-    document.addEventListener('mouseup', function () {
-        if (isDragging) {
-            isDragging = false;
-            element.style.border = '2px solid #f00'; // Optional: dashed border on drag end
-            updateCoordinates(); // Update coordinates when dragging ends
-        }
-    });
-
-    // Initial update of the coordinates when the page loads
-    updateCoordinates();
-}
+window.addEventListener('resize', onWindowResize);
