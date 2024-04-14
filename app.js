@@ -52,7 +52,7 @@ app.whenReady().then(() => {
 	})
 
 	ipcMain.handle("config:setInputFile", (_, fileName) => {
-		console.log(fileName)
+		config.input = fileName
 	})
 	
 	ipcMain.handle("config:loadConfig", async (_, configFile) => {

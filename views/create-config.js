@@ -134,6 +134,13 @@ document.getElementById('file-input').addEventListener('change', (event) => {
         return;
     }
 
+    window.electronAPI.setInputFile(file.path).then((response) => {
+        console.log(response);
+    }).catch((error) => {
+        console.error(error);
+        alert('An error occurred while saving the config.');
+    });
+
     // Hide the placeholder
     document.getElementById('pdf-placeholder').style.display = 'none';
 
