@@ -5,27 +5,45 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "electron app.js"
+    "start": "electron .",
+    "build": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^29.3.0",
     "ini": "^4.1.2",
     "pdf-lib": "^1.17.1",
     "pdf-to-img": "^2.1.2",
     "pdf2image": "^1.2.3",
     "punycode": "^2.3.1",
     "sharp": "^0.33.3",
-    "tesseract.js": "^5.0.5"
+    "tesseract.js": "^5.0.5",
+    "typescript": "^5.4.5"
   },
-  "pkg": {
-    "assets": [
-      "node_modules/open/xdg-open"
-    ],
-    "scripts": [
-      "node_modules/open/index.js"
+  "devDependencies": {
+    "electron": "^29.3.0",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9"
+  },
+  "build": {
+    "appId": "pdf-splitter.com",
+    "productName": "PDF Splitter",
+    "asar": true,
+    "win": {
+      "target": "portable"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "files": [
+      "dist/**/*",
+      "views/**/*",
+      "app.js",
+      "package.json"
     ]
   }
 }
