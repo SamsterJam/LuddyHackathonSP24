@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { fileURLToPath } from 'url';
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import * as path from 'path';
 import { parse, stringify } from 'ini';
 import { Config } from './dist/Config.js';
@@ -85,6 +85,10 @@ async function ocrScan() {
             }
 			i++
         }
+		rm("eng.traineddata").catch(e => {})
+		images.forEach(i => {
+			rm(i.path).catch(e => {})
+		})
 		splitPDF(result)
     } catch (e) {
 		dialog.showErrorBox("Error", "There was a problem with reading the document, please try again.")
