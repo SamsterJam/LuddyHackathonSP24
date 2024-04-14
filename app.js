@@ -13,8 +13,8 @@ let config = new Config()
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1000,
-        height: 800,
+        width: 1200,
+        height: 1000,
         autoHideMenuBar: true,
         webPreferences: {
             devTools: false,

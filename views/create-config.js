@@ -8,7 +8,7 @@ let pageWidth = 0;
 let pageHeight = 0;
 
 const words = {};
-let currentScale = 1; // Add this global variable
+let currentScale = 1;
 
 function renderPage(num) {
     pageIsRendering = true;
@@ -298,13 +298,18 @@ function editWord(wordItem, wordText) {
     }
 }
 
-// Add this function to handle window resize events
+
 function onWindowResize() {
     // Only re-render the page if a PDF document has been loaded
     if (pdfDoc) {
         renderPage(pageNum);
     }
 }
+
+// Event handler for the "Generate Config" button
+document.getElementById('generate-config').addEventListener('click', () => {
+    console.log(words);
+});
 
 document.getElementById('prev-page').addEventListener('click', showPrevPage);
 document.getElementById('next-page').addEventListener('click', showNextPage);
