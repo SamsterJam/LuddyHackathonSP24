@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { fileURLToPath } from 'url';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import * as path from 'path';
-import { readFile, writeFile } from 'fs/promises';
 import { parse, stringify } from 'ini';
 import { Config } from './dist/Config.js';
 import { Entry } from './dist/Entry.js';
@@ -9,6 +9,7 @@ import { Point } from './dist/Point.js';
 import { convertPDF } from 'pdf2image';
 import sharp from 'sharp';
 import Tesseract from 'tesseract.js';
+import { PDFDocument, StandardFonts } from "pdf-lib"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -84,13 +85,95 @@ async function ocrScan() {
             }
 			i++
         }
-        console.log(result);
+		splitPDF(result)
     } catch (e) {
-        console.error(e);
-        // error handling
+		dialog.showErrorBox("Error", "There was a problem with reading the document, please try again.")
     }
 }
 
+function splitPDF(pages) {
+	readFile(config.input)
+	.then(existingPdfBytes => PDFDocument.load(existingPdfBytes))
+	.then(async pdfDoc => {
+		const terms = Object.values(pages)
+
+        let currentSpliceDoc = null
+        let splicedDocs = {}
+
+
+        for (const term of terms) {
+            if(!splicedDocs.hasOwnProperty(term)){
+                splicedDocs[term] = await PDFDocument.create()
+                const page = splicedDocs[term].addPage([612, 792])
+                const {width, height} = page.getSize()
+                let fontSize = 30
+                const text = term
+                const font = await pdfDoc.embedFont(StandardFonts.TimesRoman)
+
+                const textWidth = font.widthOfTextAtSize(text, fontSize)
+                if(textWidth > width){
+                    fontSize = (width / 2) * 30 / textWidth
+                }
+                page.drawText(term, {
+                    x: width / 2 - textWidth / 2,
+                    y: height / 2,
+                    size: fontSize,
+                    font: font
+                })
+            }
+        }
+
+
+        for(let i = 0; i < pdfDoc.getPages().length; i++){
+            if(pages.hasOwnProperty(i + 1)){ //Changing document to splice to
+                currentSpliceDoc = pages[i + 1]
+            }
+            if(currentSpliceDoc == null){
+                continue
+            }
+
+            const doc = splicedDocs[currentSpliceDoc]
+
+            const [copiedPage] = await doc.copyPages(pdfDoc, [i])
+            doc.addPage(copiedPage)
+
+            console.log(`${currentSpliceDoc} ${i + 1}`)
+        }
+
+        for (const key of Object.keys(splicedDocs)) {
+			let _path = config.output.endsWith("out") ? createDirectory(config.input) : path.join(config.output, path.basename(config.input))
+            console.log(_path)
+            _path = _path.replace('.pdf', `_${key}.pdf`)
+            console.log(_path)
+            savePDF(_path, splicedDocs[key])
+        }
+	})
+	.catch(e => {
+		console.log(e)
+		dialog.showErrorBox("Error", "There was a problem with splitting the PDF, please try again.")
+	})
+}
+
+function savePDF(pth, pdf) {
+	pdf.save()
+	.then(bytes => writeFile(pth, bytes))
+	.catch(e => {
+		console.log(e)
+		dialog.showErrorBox("Error", "Error writing PDF to file")
+		return
+	})
+	dialog.showErrorBox("Success", "PDF file saved successfully")
+}
+
+function createDirectory(givenPath) {
+	const dirPath = path.dirname(givenPath)
+	const pdfName = path.basename(givenPath)
+	const newPath = path.join(dirPath, "out")
+
+	mkdir(newPath, { recursive: true })
+	.catch(e => dialog.showErrorBox("Error", "Filesystem Error"))
+	return path.join(newPath, pdfName)
+}
 
 
 app.on('window-all-closed', () => {
@@ -115,19 +198,18 @@ app.whenReady().then(() => {
 	ipcMain.handle("config:loadConfig", async (_, configFile) => {
         readFile(configFile).then(buff => buff.toString()).then(parse).then(configData => {
 			config = new Config(configData.Files.INPUT, configData.Files.OUTPUT)
-			let totalEntries = Object.keys(configData.OCR).length/2
-			for (let i = 1; i <= totalEntries; i++) {
-				const allPoints = configData.OCR[`Loc${i}`].split(",")
-				config.addEntry(new Entry(configData.OCR[`Text${i}`], new Point(allPoints[0], allPoints[1]), new Point(allPoints[2], allPoints[3])))
+			console.log()
+			if (configData.OCR != null){
+				let totalEntries = Object.keys(configData.OCR).length/2
+				for (let i = 1; i <= totalEntries; i++) {
+					const allPoints = configData.OCR[`Loc${i}`].split(",")
+					config.addEntry(new Entry(configData.OCR[`Text${i}`], new Point(allPoints[0], allPoints[1]), new Point(allPoints[2], allPoints[3])))
+				}
 			}
-			try {
-				return 'PDF slicing completed successfully!';
-			} catch (error) {
-				console.error('Error slicing PDF:', error);
-				throw error;
-			}
-		}).catch(_ => {
-			throw "There was a formatting issue with the provided config file, please try again."
+			ocrScan()
+			.catch(e => dialog.showErrorBox("Error", "There was a an issue with slicing your pdf, please try again."))
+		}).catch(e => {
+			dialog.showErrorBox("Error", "There was a formatting issue with the provided config file, please try again.")
 		})
     });
 
@@ -137,6 +219,7 @@ app.whenReady().then(() => {
 		for (let bound in bounds) {
 			config.addEntry(new Entry(bound, new Point(Math.min(bounds[bound][0], bounds[bound][2]), Math.min(bounds[bound][1], bounds[bound][3])), new Point(Math.max(bounds[bound][0], bounds[bound][2]), Math.max(bounds[bound][1], bounds[bound][3]))));
 		}
+		config.output = path.join(path.dirname(config.input), "out")
 	
 		// Show save dialog to the user
 		const { filePath } = await dialog.showSaveDialog({
@@ -156,7 +239,7 @@ app.whenReady().then(() => {
 	
 			// Write the config string to the selected file path
 			try {
-				ocrScan()
+				await ocrScan()
 				await writeFile(filePath, configString);
 				return 'Config file saved successfully!';
 			} catch (error) {

@@ -10,7 +10,6 @@ document.getElementById('sliceBtn').addEventListener('click', () => {
 
     window.electronAPI.loadConfig(configFile).then((response) => {
         console.log(response);
-        alert('PDF slicing completed!');
     }).catch((error) => {
         console.error(error);
         alert('An error occurred while slicing the PDF.');

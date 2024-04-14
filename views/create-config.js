@@ -311,10 +311,8 @@ function onWindowResize() {
 document.getElementById('generate-config').addEventListener('click', () => {
     window.electronAPI.saveBounds(words).then((response) => {
         console.log(response);
-        alert('Config Saved!');
     }).catch((error) => {
         console.error(error);
-        alert('An error occurred while saving the config.');
     });
 });
 
