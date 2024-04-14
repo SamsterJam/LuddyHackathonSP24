@@ -74,8 +74,11 @@ app.whenReady().then(() => {
 		})
     });
 
-	ipcMain.handle("debug", (_, data) => {
-		console.log(data)
+	ipcMain.handle("config:saveBounds", (_, bounds) => {
+		config.clearEntries()
+		for (let bound in bounds) {
+			config.addEntry(new Entry(bound, new Point(Math.min(bounds[bound][0], bounds[bound][2]), Math.min(bounds[bound][1], bounds[bound][3])), new Point(Math.max(bounds[bound][0], bounds[bound][2]), Math.max(bounds[bound][1], bounds[bound][3]))))
+		}
 	})
 });
 
