@@ -243,3 +243,26 @@ canvas {
 .slider-input {
     flex-grow: 1; /* Allow the slider to take up the remaining space */
 }
+
+.generate-config-btn {
+    display: block; 
+    width: 100%; 
+    padding: 15px 20px;
+    margin-top: 10px; 
+    background-color: #2196F3; 
+    color: white; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 1em; 
+    transition: background-color 0.3s;
+}
+
+.generate-config-btn:hover {
+    background-color: #0b7dda; 
+}
+
+.generate-config-btn:disabled {
+    background-color: #555;
+    cursor: default;
+}
