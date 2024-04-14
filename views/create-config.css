@@ -245,3 +245,14 @@ canvas {
         padding: 20px;
     }
 }
+
+.slicing-status {
+    text-align: center;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.slicing-status h2 {
+    color: #4caf50;
+    margin-bottom: 10px;
+}

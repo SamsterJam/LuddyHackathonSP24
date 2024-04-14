@@ -307,12 +307,49 @@ function onWindowResize() {
     }
 }
 
+function showSlicingScreen() {
+    // Hide the current UI elements
+    document.getElementById('pdf-viewer').style.display = 'none';
+    document.querySelector('.pdf-navigation').style.display = 'none';
+    document.getElementById('page-info').style.display = 'none';
+    document.getElementById('word-list-container').style.display = 'none'; // Assuming you have a container for the word list
+
+    // Show the "Slicing" screen
+    const slicingScreen = document.getElementById('slicing-screen');
+    if (!slicingScreen) {
+        // Create the slicing screen if it doesn't exist
+        const slicingScreenElement = document.createElement('div');
+        slicingScreenElement.id = 'slicing-screen';
+        slicingScreenElement.textContent = 'Slicing...';
+        slicingScreenElement.style.display = 'flex'; // Use your preferred styling
+        document.body.appendChild(slicingScreenElement);
+    } else {
+        // If it exists, just show it
+        slicingScreen.style.display = 'flex';
+    }
+}
+
 // Event handler for the "Generate Config" button
 document.getElementById('generate-config').addEventListener('click', () => {
+    // Show the slicing status
+    document.getElementById('slicing-status').style.display = 'block';
+    // Hide the content area
+    document.querySelector('.content').style.display = 'none';
+    // Hide the generate config button
+    document.getElementById('generate-config').style.display = 'none';
+
     window.electronAPI.saveBounds(words).then((response) => {
         console.log(response);
+        // Hide the slicing status and show the content area when done
+        document.getElementById('slicing-status').style.display = 'none';
+        document.querySelector('.content').style.display = 'block';
+        document.getElementById('generate-config').style.display = 'block';
     }).catch((error) => {
         console.error(error);
+        // Hide the slicing status and show the content area if there's an error
+        document.getElementById('slicing-status').style.display = 'none';
+        document.querySelector('.content').style.display = 'block';
+        document.getElementById('generate-config').style.display = 'block';
     });
 });
 
