@@ -73,3 +73,10 @@ async function savePDF(path, pdf){
         }
     })
 }
+
+//TODO: Remove test code and 123456.pdf
+const pages = {
+    1: "COMPLAINTS",
+    4: "SUMMONS",
+    5: "APPEARANCE"}
+splitPDF(pages, "123456.pdf")
