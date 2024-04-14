@@ -39,7 +39,7 @@ function forgeConfig() {
 		obj.OCR[`Text${i}`] = config.getEntry(i).text
 		obj.OCR[`Loc${i}`] = [config.getEntry(i).pointOne.x, config.getEntry(i).pointOne.y, config.getEntry(i).pointTwo.x, config.getEntry(i).pointTwo.y].join(",")
 	}
-	console.log(obj)
+	return stringify(obj)
 }
 
 app.whenReady().then(() => {
