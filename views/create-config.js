@@ -65,26 +65,6 @@ function renderPage(num) {
     document.getElementById('page-num').textContent = num;
 }
 
-function drawBoundingBox(context) {
-    if (!activeWord || !words[activeWord]) {
-        return;
-    }
-    const boundingBox = words[activeWord];
-
-    // Adjust the bounding box coordinates based on the current scale
-    const scaledX = boundingBox[0] * currentScale;
-    // Invert the Y coordinates because canvas origin is at the top-left
-    const scaledY = (pageHeight - boundingBox[3]) * currentScale;
-    const scaledWidth = (boundingBox[2] - boundingBox[0]) * currentScale;
-    // Calculate height based on inverted Y coordinates
-    const scaledHeight = (boundingBox[3] - boundingBox[1]) * currentScale;
-
-    context.beginPath();
-    context.rect(scaledX, scaledY, scaledWidth, scaledHeight);
-    context.strokeStyle = 'red';
-    context.lineWidth = 2;
-    context.stroke();
-}
 
 function updateBoundingBox(event) {
     const slider = event.target;
@@ -97,16 +77,30 @@ function updateBoundingBox(event) {
     }
 
     const index = { 'x1': 0, 'y1': 1, 'x2': 2, 'y2': 3 }[id];
-    // Invert the Y values because canvas origin is at the top-left
-    if (id.startsWith('y')) {
-        words[word][index] = pageHeight - (value * currentScale);
-    } else {
-        words[word][index] = value * currentScale;
-    }
+    words[word][index] = value * currentScale;
 
     if (activeWord === word) {
         renderPage(pageNum); // Redraw the page with the updated bounding box
     }
+}
+
+function drawBoundingBox(context) {
+    if (!activeWord || !words[activeWord]) {
+        return;
+    }
+    const boundingBox = words[activeWord];
+
+    // Adjust the bounding box coordinates based on the current scale
+    const scaledX = boundingBox[0] * currentScale;
+    const scaledY = boundingBox[1] * currentScale; // Use the stored Y value directly
+    const scaledWidth = (boundingBox[2] - boundingBox[0]) * currentScale;
+    const scaledHeight = (boundingBox[3] - boundingBox[1]) * currentScale;
+
+    context.beginPath();
+    context.rect(scaledX, scaledY, scaledWidth, scaledHeight);
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.stroke();
 }
 
 function queueRenderPage(num) {
@@ -209,12 +203,12 @@ function addWordToList() {
     const createSlider = (id, min, max, value) => {
         const sliderContainer = document.createElement('div');
         sliderContainer.className = 'slider-container';
-    
+
         const sliderLabel = document.createElement('label');
         sliderLabel.className = 'slider-label';
         sliderLabel.textContent = id.toUpperCase() + ': ';
         sliderLabel.setAttribute('for', id + '-slider'); // Associate the label with the slider
-    
+
         const slider = document.createElement('input');
         slider.className = 'slider-input'; // Add class for styling
         slider.type = 'range';
@@ -224,7 +218,7 @@ function addWordToList() {
         slider.value = value;
         slider.dataset.word = word;
         slider.addEventListener('input', updateBoundingBox);
-    
+
         sliderContainer.appendChild(sliderLabel);
         sliderContainer.appendChild(slider);
         return sliderContainer;
@@ -245,9 +239,9 @@ function addWordToList() {
 
     // Use the unscaled PDF page dimensions for the sliders, adjusted by the current scale
     sliders.appendChild(createSlider('x1', 0, pageWidth / currentScale, (words[word][0] / currentScale)));
-    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, (pageHeight - words[word][1]) / currentScale));
+    sliders.appendChild(createSlider('y1', 0, pageHeight / currentScale, (words[word][1] / currentScale)));
     sliders.appendChild(createSlider('x2', 0, pageWidth / currentScale, (words[word][2] / currentScale)));
-    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (pageHeight - words[word][3]) / currentScale));
+    sliders.appendChild(createSlider('y2', 0, pageHeight / currentScale, (words[word][3] / currentScale)));
 
     wordItem.appendChild(sliders);
 
