@@ -6,6 +6,9 @@ import { parse, stringify } from "ini"
 import { Config } from "./dist/Config.js"
 import { Entry } from "./dist/Entry.js"
 import { Point } from "./dist/Point.js"
+import { pdf } from "pdf-to-img"
+import sharp from "sharp"
+import Tesseract from "tesseract.js"
 import { dialog } from 'electron';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +44,39 @@ function forgeConfig() {
 		obj.OCR[`Loc${i}`] = [config.getEntry(i).pointOne.x, config.getEntry(i).pointOne.y, config.getEntry(i).pointTwo.x, config.getEntry(i).pointTwo.y].join(",")
 	}
 	return stringify(obj)
+}
+
+function ocrScan() {
+	const result = {}
+	pdf(config.input)
+	.then(async images => {
+		let i = 0
+		for await (const image of images) {
+			console.log("FOOD: ", image)
+			for (const boundry of config.entries) {
+				let shouldBreak = false
+				// sharp(image).extract({ left: boundry.pointOne.x, top: boundry.pointOne.y, width: boundry.pointTwo.x - boundry.pointOne.x, height: boundry.pointTwo.y - boundry.pointOne.y }).toBuffer()
+				// .then(croppedImage => Tesseract.recognize(croppedImage, "eng"))
+				// .then(ocrData => ocrData.data.text.toUpperCase().split(/\s+/).filter(word => word == boundry.text).join(' ').length > 0)
+				// .then(isMatch => {
+				// 	if (isMatch) {
+				// 		result[i+1] = boundry.text
+				// 		shouldBreak = true
+				// 	}
+				// })
+				// .catch(e => {
+				// 	throw e
+				// })
+				// if (shouldBreak) break
+			}
+			i++
+		}
+		console.log(result)
+	})
+	.catch(e => {
+		console.log(e)
+		// error handling
+	})
 }
 
 app.whenReady().then(() => {
@@ -100,6 +136,7 @@ app.whenReady().then(() => {
 	
 			// Write the config string to the selected file path
 			try {
+				ocrScan()
 				await writeFile(filePath, configString);
 				return 'Config file saved successfully!';
 			} catch (error) {
