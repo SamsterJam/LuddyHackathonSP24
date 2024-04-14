@@ -316,7 +316,6 @@ document.getElementById('generate-config').addEventListener('click', () => {
         console.error(error);
         alert('An error occurred while saving the config.');
     });
-    console.log(words);
 });
 
 document.getElementById('prev-page').addEventListener('click', showPrevPage);
