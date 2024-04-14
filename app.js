@@ -6,6 +6,7 @@ import { parse, stringify } from "ini"
 import { Config } from "./dist/Config.js"
 import { Entry } from "./dist/Entry.js"
 import { Point } from "./dist/Point.js"
+import { dialog } from 'electron';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -74,12 +75,48 @@ app.whenReady().then(() => {
 		})
     });
 
-	ipcMain.handle("config:saveBounds", (_, bounds) => {
-		config.clearEntries()
+	ipcMain.handle("config:saveBounds", async (event, bounds) => {
+		// Process bounds and update the config object
+		config.clearEntries();
 		for (let bound in bounds) {
-			config.addEntry(new Entry(bound, new Point(Math.min(bounds[bound][0], bounds[bound][2]), Math.min(bounds[bound][1], bounds[bound][3])), new Point(Math.max(bounds[bound][0], bounds[bound][2]), Math.max(bounds[bound][1], bounds[bound][3]))))
+			config.addEntry(new Entry(bound, new Point(Math.min(bounds[bound][0], bounds[bound][2]), Math.min(bounds[bound][1], bounds[bound][3])), new Point(Math.max(bounds[bound][0], bounds[bound][2]), Math.max(bounds[bound][1], bounds[bound][3]))));
 		}
-	})
+	
+		// Show save dialog to the user
+		const { filePath } = await dialog.showSaveDialog({
+			title: 'Save Config File',
+			buttonLabel: 'Save',
+			filters: [
+				{ name: 'Config Files', extensions: ['ini'] },
+				{ name: 'All Files', extensions: ['*'] }
+			],
+			properties: ['createDirectory', 'showOverwriteConfirmation']
+		});
+	
+		// If the user cancels the save dialog, filePath will be undefined
+		if (filePath) {
+			// Generate the config string
+			const configString = forgeConfig();
+	
+			// Write the config string to the selected file path
+			try {
+				await writeFile(filePath, configString);
+				return 'Config file saved successfully!';
+			} catch (error) {
+				console.error('Error saving config file:', error);
+				throw error;
+			}
+		} else {
+			// User canceled the save dialog
+			throw 'Save operation was canceled by the user.';
+		}
+	});
+
+	app.on("activate", () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
 });
 
 app.on("window-all-closed", () => {
