@@ -8,10 +8,11 @@
     "compile": "tsc",
     "start": "electron app.js",
     "build": "electron-builder",
-    "build:win": "electron-builder --win",
+    "build:win": "electron-builder --win --ia32",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
-    "rebuild": "electron-rebuild"
+    "rebuild": "electron-rebuild",
+    "postinstall": "electron-rebuild"
   },
   "keywords": [],
   "author": "",
@@ -42,7 +43,7 @@
       "node_modules/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "portable"
     },
     "mac": {
       "target": "dmg"
