@@ -37,7 +37,7 @@ function forgeConfig() {
 	}
 	for (let i = 1; i <= config.totalEntries; i++) {
 		obj.OCR[`Text${i}`] = config.getEntry(i).text
-		obj.OCR[`Loc${i}`] = [config.getEntry(i).pointOne.x, config.getEntry(i).pointOne.y, config.getEntry(i).pointTwo.x, config.getEntry(i).pointTwo.y]
+		obj.OCR[`Loc${i}`] = [config.getEntry(i).pointOne.x, config.getEntry(i).pointOne.y, config.getEntry(i).pointTwo.x, config.getEntry(i).pointTwo.y].join(",")
 	}
 	console.log(obj)
 }
