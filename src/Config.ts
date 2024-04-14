@@ -54,4 +54,8 @@ export class Config {
     isActive(): boolean {
         return this._active
     }
+
+    clearEntries() {
+        this._entries = []
+    }
 }
